@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Route Chooser</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+<div>
+  <input id="pac-src" class="controls" type="text" size="50" />
+  <input id="pac-dst" class="controls" type="text" size="50" />
+  <input id="submit-button" class="controls" type="button" value="Submit" disabled />
+  <div id="status-label" class="control-labels"></div>
+</div>
+<div id="map-canvas"></div>
+
+<script type="text/javascript" src="route-chooser.js"></script>
+<script type="text/javascript" async defer src="https://maps.googleapis.com/maps/api/js?v=3&amp;libraries=places&amp;callback=initialize"></script>
+
+</body>
+
+</html>
