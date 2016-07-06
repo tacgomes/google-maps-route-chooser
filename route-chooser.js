@@ -1,9 +1,46 @@
-function displayRoute(dirSrvc, dirDsply, startMarker, destMarker)
-{
+var dirDsply = null;
+
+function assert(condition, message) {
+    if (!condition) {
+        message = message || "Assertion failed";
+        if (typeof Error !== "undefined") {
+            throw new Error(message);
+        }
+        throw message; // Fallback
+    }
+}
+
+function formSubmit() {
+    var directions = dirDsply.getDirections();
+    // As `provideRouteAlternatives` was set to `false` and there were
+    // no waypoints provided in the route request message, there will be
+    // a single route containing a single leg.
+    assert(directions.routes.length == 1, "More than one route");
+    assert(directions.routes[0].legs.length == 1, "More than one leg");
+    var leg = directions.routes[0].legs[0];
+    var data = {}
+    data.start = {
+        'lat': leg.start_location.lat(),
+        'lng': leg.start_location.lng()
+    };
+    data.end = {
+        'lat': leg.end_location.lat(),
+        'lng': leg.end_location.lng()
+    };
+    data.waypoints = [];
+    leg.via_waypoints.forEach(function(wp) {
+        data.waypoints.push([wp.lat(), wp.lng()]);
+    });
+    var route_str = JSON.stringify(data);
+    alert("Request message = " + route_str);
+}
+
+function displayRoute(dirSrvc, startMarker, destMarker) {
     var request = {
       origin: startMarker.position,
       destination: destMarker.position,
-      travelMode: google.maps.TravelMode.DRIVING
+      travelMode: google.maps.TravelMode.DRIVING,
+      provideRouteAlternatives: false
     };
     dirSrvc.route(request, function(result, status) {
       if (status == google.maps.DirectionsStatus.OK) {
@@ -22,7 +59,7 @@ function displayRoute(dirSrvc, dirDsply, startMarker, destMarker)
           document.getElementById('status-label').innerHTML = "";
       } else if (status == google.maps.DirectionsStatus.ZERO_RESULTS) {
           document.getElementById('submit-button').disabled = true;
-          document.getElementById('status-label').innerHTML = 
+          document.getElementById('status-label').innerHTML =
               "Failed to find route";
       } else {
           alert("Failed to get directions:" + status);
@@ -43,8 +80,7 @@ function updateInputBox(geocoder, location, inputBox) {
     });
 }
 
-function updatePlaceHolders()
-{
+function updatePlaceHolders() {
     var startInput = document.getElementById('pac-src');
     var destInput = document.getElementById('pac-dst');
     if (startInput.value == "") {
@@ -72,7 +108,7 @@ function initialize() {
     var map = new google.maps.Map(mapCanvas, mapOptions);
     var geocoder = new google.maps.Geocoder();
     var dirSrvc = new google.maps.DirectionsService();
-    var dirDsply = new google.maps.DirectionsRenderer({
+    dirDsply = new google.maps.DirectionsRenderer({
         map: map,
         draggable: true,
     });
@@ -95,7 +131,7 @@ function initialize() {
     });
     startMarker.addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, startInput);
-        displayRoute(dirSrvc, dirDsply, startMarker, destMarker);
+        displayRoute(dirSrvc, startMarker, destMarker);
     });
     var destMarker = new google.maps.Marker({
         draggable: true,
@@ -103,7 +139,7 @@ function initialize() {
     });
     destMarker.addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, destInput);
-        displayRoute(dirSrvc, dirDsply, startMarker, destMarker);
+        displayRoute(dirSrvc, startMarker, destMarker);
     });
 
     var startSet = false;
@@ -126,7 +162,7 @@ function initialize() {
        }
        if (startSet && destSet)
        {
-           displayRoute(dirSrvc, dirDsply, startMarker, destMarker);
+           displayRoute(dirSrvc, startMarker, destMarker);
        }
     });
 
@@ -151,10 +187,10 @@ function initialize() {
           } else {
               startSet = true;
               startMarker.setMap(map);
-              startMarker.setPosition(places[0].geometry.location); 
+              startMarker.setPosition(places[0].geometry.location);
               map.panTo(startMarker.getPosition());
               if (destSet == true) {
-                  displayRoute(dirSrvc, dirDsply, startMarker, destMarker);
+                  displayRoute(dirSrvc, startMarker, destMarker);
               }
           }
     });
@@ -182,12 +218,10 @@ function initialize() {
           } else {
               destSet = true;
               destMarker.setMap(map);
-              destMarker.setPosition(places[0].geometry.location); 
+              destMarker.setPosition(places[0].geometry.location);
               if (startSet == true) {
-                  displayRoute(dirSrvc, dirDsply, startMarker, destMarker);
+                  displayRoute(dirSrvc, startMarker, destMarker);
               }
           }
     });
 }
-
-// google.maps.event.addDomListener(window, 'load', initialize);
