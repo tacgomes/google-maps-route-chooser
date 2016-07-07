@@ -1,16 +1,37 @@
 var dirDsply = null;
 
+var routeData = null;
+
+// Uncomment the following declaration for testing loading an existing
+// route.  The backend server should fill the real data by echoing it
+// inside a `script` tag.
+// var routeData = {
+//     start: {
+//         lat: 41.16651,
+//         lng: -8.67069
+//     },
+//     end: {
+//         lat: 41.16652,
+//         lng: -8.61743
+//     },
+//     waypoints: [
+//         [41.14524, -8.61299],
+//         [41.15523, -8.59528],
+//         [41.15923, -8.59488]
+//     ]
+// };
+
 function assert(condition, message) {
     if (!condition) {
         message = message || "Assertion failed";
         if (typeof Error !== "undefined") {
             throw new Error(message);
         }
-        throw message; // Fallback
+        throw message;
     }
 }
 
-function formSubmit() {
+function saveRoute() {
     var directions = dirDsply.getDirections();
     // As `provideRouteAlternatives` was set to `false` and there were
     // no waypoints provided in the route request message, there will be
@@ -32,14 +53,44 @@ function formSubmit() {
         data.waypoints.push([wp.lat(), wp.lng()]);
     });
     var route_str = JSON.stringify(data);
+
     alert("Request message = " + route_str);
+
+    // The route could then be stored in a database by doing an AJAX
+    // call to the backend server, passing the JSON string in the body
+    // of HTTP POST message.
 }
 
-function displayRoute(dirSrvc, startMarker, destMarker) {
+
+function loadRoute(dirSrvc, startMarker, destMarker) {
+    startMarker.setPosition(new google.maps.LatLng(
+            routeData.start.lat, routeData.start.lng));
+    destMarker.setPosition(new google.maps.LatLng(
+            routeData.end.lat, routeData.end.lng));
+    var waypoints = [];
+    for (var i = 0; i < routeData.waypoints.length; i++) {
+        var wp = {
+            location: new google.maps.LatLng(
+                    routeData.waypoints[i][0],
+                    routeData.waypoints[i][1]),
+            stopover: false
+
+        };
+        waypoints.push(wp);
+    }
+    displayRoute(dirSrvc, startMarker, destMarker, waypoints);
+}
+
+function displayRoute(dirSrvc, startMarker, destMarker, waypoints) {
+    if (typeof waypoints == "undefined") {
+        waypoints = [];
+    }
     var request = {
       origin: startMarker.position,
       destination: destMarker.position,
       travelMode: google.maps.TravelMode.DRIVING,
+      waypoints: waypoints,
+      optimizeWaypoints: false,
       provideRouteAlternatives: false
     };
     dirSrvc.route(request, function(result, status) {
@@ -224,4 +275,8 @@ function initialize() {
               }
           }
     });
+
+    if (routeData != null) {
+        loadRoute(dirSrvc, startMarker, destMarker);
+    }
 }
