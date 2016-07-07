@@ -9,3 +9,5 @@ A route can be chosen by writing down the starting point and destination
 on input boxes, or clicking on the map.  The user interaction tries to
 stay as close as possible to the one provided by the directions page on
 Google Maps, as users are likely to be familiar with the later one.
+
+![route chooser](route-chooser.png?raw=true "Route Chooser")
