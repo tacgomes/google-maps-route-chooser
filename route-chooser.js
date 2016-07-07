@@ -166,14 +166,16 @@ function initialize() {
     });
 
     dirDsply.addListener('directions_changed', function() {
-        if (dirDsply.getDirections() != null) {
-            route = dirDsply.getDirections().routes[0];
-            startLeg = route.legs[0];
-            endLeg = route.legs[route.legs.length - 1];
-            startInput.value = startLeg.start_address;
-            destInput.value = endLeg.end_address;
+        directions = dirDsply.getDirections();
+        if (directions != null) {
+            leg = directions.routes[0].legs[0];
+            startInput.value = leg.start_address;
+            destInput.value = leg.end_address;
         }
     });
+
+    var startSet = false;
+    var destSet = false;
 
     // Create markers for showing when not route is either
     // not being displayed or was found
@@ -183,7 +185,9 @@ function initialize() {
     });
     startMarker.addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, startInput);
-        displayRoute(dirSrvc, startMarker, destMarker);
+        if (destSet) {
+            displayRoute(dirSrvc, startMarker, destMarker);
+        }
     });
     var destMarker = new google.maps.Marker({
         draggable: true,
@@ -191,11 +195,10 @@ function initialize() {
     });
     destMarker.addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, destInput);
-        displayRoute(dirSrvc, startMarker, destMarker);
+        if (startSet) {
+            displayRoute(dirSrvc, startMarker, destMarker);
+        }
     });
-
-    var startSet = false;
-    var destSet = false;
 
     google.maps.event.addListener(map, 'click', function(event) {
        if (startSet == false && startInput.value == "") {
@@ -228,14 +231,10 @@ function initialize() {
         updatePlaceHolders();
         document.getElementById('submit-button').disabled = true;
     });
-
     var startSearchBox = new google.maps.places.SearchBox(startInput);
     startSearchBox.addListener('places_changed', function() {
           var places = startSearchBox.getPlaces();
-          if (places.length == 0) {
-              startSet = false;
-              dirDsply.set('directions', null);
-          } else {
+          if (places.length != 0) {
               startSet = true;
               startMarker.setMap(map);
               startMarker.setPosition(places[0].geometry.location);
@@ -258,15 +257,10 @@ function initialize() {
         updatePlaceHolders();
         document.getElementById('submit-button').disabled = true;
     });
-
     var dstSearchBox = new google.maps.places.SearchBox(destInput);
     dstSearchBox.addListener('places_changed', function() {
           var places = dstSearchBox.getPlaces();
-          if (places.length == 0) {
-              destSet = false;
-              dirDsply.set('directions', null);
-              startMarker.setMap(map);
-          } else {
+          if (places.length != 0) {
               destSet = true;
               destMarker.setMap(map);
               destMarker.setPosition(places[0].geometry.location);
