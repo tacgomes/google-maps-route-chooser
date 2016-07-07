@@ -12,10 +12,10 @@
 
 <div>
   <form onsubmit="saveRoute()">
-  <input id="pac-src" class="controls" type="text" size="50" />
-  <input id="pac-dst" class="controls" type="text" size="50" />
+  <input id="pac-src" class="controls" type="text" />
+  <input id="pac-dst" class="controls" type="text" />
   <input id="submit-button" class="controls" type="submit" value="Save Route" disabled />
-  <div id="status-label" class="control-labels"></div>
+  <div id="status-label" class="alert alert-error">Sorry, your search appears to be outside the current coverage area for driving.</div>
   </form>
 </div>
 <div id="map-canvas"></div>

@@ -107,11 +107,10 @@ function displayRoute(dirSrvc, startMarker, destMarker, waypoints) {
           destMarker.setPosition(end_leg.end_location);
           dirDsply.setDirections(result);
           document.getElementById('submit-button').disabled = false;
-          document.getElementById('status-label').innerHTML = "";
+          document.getElementById('status-label').style.visibility = "hidden"
       } else if (status == google.maps.DirectionsStatus.ZERO_RESULTS) {
           document.getElementById('submit-button').disabled = true;
-          document.getElementById('status-label').innerHTML =
-              "Failed to find route";
+          document.getElementById('status-label').style.visibility = "visible"
       } else {
           alert("Failed to get directions:" + status);
       }
@@ -144,6 +143,8 @@ function updatePlaceHolders() {
 
 function initialize() {
     document.getElementById('submit-button').disabled = true;
+    document.getElementById('status-label').style.visibility = "hidden";
+
     var startInput = document.getElementById('pac-src');
     var destInput = document.getElementById('pac-dst');
     startInput.value = "";
@@ -211,8 +212,7 @@ function initialize() {
            destMarker.setMap(map);
            updateInputBox(geocoder, event.latLng, destInput);
        }
-       if (startSet && destSet)
-       {
+       if (startSet && destSet) {
            displayRoute(dirSrvc, startMarker, destMarker);
        }
     });

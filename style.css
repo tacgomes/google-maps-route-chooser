@@ -1,4 +1,38 @@
+input[type="text"] {
+    width: 780px;
+}
+
+.controls {
+    margin-bottom: 10px;
+    display: block;
+}
+
+.alert {
+    padding: 5px 35px 5px 14px;
+    margin-left: 5px;
+    margin-bottom: 18px;
+    color: #c09853;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    background-color: #fcf8e3;
+    border: 1px solid #fbeed5;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    display: inline-block;
+    width: 629px;
+}
+
+.alert-error {
+    color: #b94a48;
+    background-color: #f2dede;
+    border-color: #eed3d7;
+}
+
 #map-canvas {
     height: 600px;
     width: 800px;
+}
+
+#submit-button {
+    display: inline-block;
 }
