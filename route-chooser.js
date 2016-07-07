@@ -231,13 +231,13 @@ function initialize() {
         updatePlaceHolders();
         document.getElementById('submit-button').disabled = true;
     });
-    var startSearchBox = new google.maps.places.SearchBox(startInput);
-    startSearchBox.addListener('places_changed', function() {
-          var places = startSearchBox.getPlaces();
-          if (places.length != 0) {
+    var startAutocomplete = new google.maps.places.Autocomplete(startInput);
+    startAutocomplete.addListener('place_changed', function() {
+          var place = startAutocomplete.getPlace();
+          if (place.geometry) {
               startSet = true;
               startMarker.setMap(map);
-              startMarker.setPosition(places[0].geometry.location);
+              startMarker.setPosition(place.geometry.location);
               map.panTo(startMarker.getPosition());
               if (destSet == true) {
                   displayRoute(dirSrvc, startMarker, destMarker);
@@ -257,13 +257,13 @@ function initialize() {
         updatePlaceHolders();
         document.getElementById('submit-button').disabled = true;
     });
-    var dstSearchBox = new google.maps.places.SearchBox(destInput);
-    dstSearchBox.addListener('places_changed', function() {
-          var places = dstSearchBox.getPlaces();
-          if (places.length != 0) {
+    var destAutocomplete = new google.maps.places.Autocomplete(destInput);
+    destAutocomplete.addListener('place_changed', function() {
+          var place = destAutocomplete.getPlace();
+          if (place.geometry) {
               destSet = true;
               destMarker.setMap(map);
-              destMarker.setPosition(places[0].geometry.location);
+              destMarker.setPosition(place.geometry.location);
               if (startSet == true) {
                   displayRoute(dirSrvc, startMarker, destMarker);
               }
