@@ -41,12 +41,12 @@ function saveRoute() {
     var leg = directions.routes[0].legs[0];
     var data = {}
     data.start = {
-        'lat': leg.start_location.lat(),
-        'lng': leg.start_location.lng()
+        lat: leg.start_location.lat(),
+        lng: leg.start_location.lng()
     };
     data.end = {
-        'lat': leg.end_location.lat(),
-        'lng': leg.end_location.lng()
+        lat: leg.end_location.lat(),
+        lng: leg.end_location.lng()
     };
     data.waypoints = [];
     leg.via_waypoints.forEach(function(wp) {
@@ -123,7 +123,7 @@ function displayRoute(dirSrvc, startMarker, destMarker, waypoints) {
 }
 
 function updateInputBox(geocoder, location, inputBox) {
-    geocoder.geocode({'location': location}, function(results, status) {
+    geocoder.geocode({location: location}, function(results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
             inputBox.value = results[0].formatted_address;
         } else if (status === google.maps.GeocoderStatus.ZERO_RESULTS) {
