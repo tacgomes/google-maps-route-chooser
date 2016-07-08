@@ -21,6 +21,11 @@ var routeData = null;
 //     ]
 // };
 
+var Point = {
+    START: 0,
+    DEST: 1
+};
+
 function assert(condition, message) {
     if (!condition) {
         message = message || "Assertion failed";
@@ -62,12 +67,12 @@ function saveRoute() {
 }
 
 
-function loadRoute(dirSrvc, startMarker, destMarker) {
-    startMarker.setPosition({
+function loadRoute(dirSrvc, markers) {
+    markers[Point.START].setPosition({
         lat: routeData.start.lat,
         lng: routeData.start.lng
     });
-    destMarker.setPosition({
+    markers[Point.DEST].setPosition({
         lat: routeData.end.lat,
         lng: routeData.end.lng
     });
@@ -83,16 +88,16 @@ function loadRoute(dirSrvc, startMarker, destMarker) {
         };
         waypoints.push(wp);
     }
-    displayRoute(dirSrvc, startMarker, destMarker, waypoints);
+    displayRoute(dirSrvc, markers, waypoints);
 }
 
-function displayRoute(dirSrvc, startMarker, destMarker, waypoints) {
+function displayRoute(dirSrvc, markers, waypoints) {
     if (typeof waypoints == "undefined") {
         waypoints = [];
     }
     var request = {
-      origin: startMarker.position,
-      destination: destMarker.position,
+      origin: markers[Point.START].position,
+      destination: markers[Point.DEST].position,
       travelMode: google.maps.TravelMode.DRIVING,
       waypoints: waypoints,
       optimizeWaypoints: false,
@@ -100,16 +105,16 @@ function displayRoute(dirSrvc, startMarker, destMarker, waypoints) {
     };
     dirSrvc.route(request, function(result, status) {
       if (status == google.maps.DirectionsStatus.OK) {
-          startMarker.setMap(null);
-          destMarker.setMap(null);
+          markers[Point.START].setMap(null);
+          markers[Point.DEST].setMap(null);
           route = result.routes[0];
           startLeg = route.legs[0];
           end_leg = route.legs[route.legs.length - 1];
           // The markers from the DirectionsService are placed
           // on streets.  Update the markers position to avoid
           // jumps when the route ceases to be shown.
-          startMarker.setPosition(startLeg.start_location);
-          destMarker.setPosition(end_leg.end_location);
+          markers[Point.START].setPosition(startLeg.start_location);
+          markers[Point.DEST].setPosition(end_leg.end_location);
           dirDsply.setDirections(result);
           document.getElementById('submit-button').disabled = false;
           document.getElementById('status-label').style.visibility = "hidden"
@@ -146,21 +151,21 @@ function updatePlaceHolders() {
    }
 }
 
-function hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet) {
+function hideRoute(map, dirDsply, markers, startSet, destSet) {
     dirDsply.set('directions', null);
     if (startSet == false) {
-        startMarker.setMap(null);
+        markers[Point.START].setMap(null);
     }
     if (destSet == false) {
-        destMarker.setMap(null);
+        markers[Point.DEST].setMap(null);
     }
-    if (startSet && startMarker.getMap() == null) {
-        startMarker.setMap(map);
-        map.panTo(startMarker.getPosition());
+    if (startSet && markers[Point.START].getMap() == null) {
+        markers[Point.START].setMap(map);
+        map.panTo(markers[Point.START].getPosition());
     }
-    if (destSet && destMarker.getMap() == null) {
-        destMarker.setMap(map);
-        map.panTo(destMarker.getPosition());
+    if (destSet && markers[Point.DEST].getMap() == null) {
+        markers[Point.DEST].setMap(map);
+        map.panTo(markers[Point.DEST].getPosition());
     }
     updatePlaceHolders();
     document.getElementById('submit-button').disabled = true;
@@ -204,50 +209,51 @@ function initialize() {
 
     // Create markers for showing when not route is either
     // not being displayed or was found
-    var startMarker = new google.maps.Marker({
+    var markers = [null, null];
+    markers[Point.START] = new google.maps.Marker({
         draggable: true,
         icon: 'spotlight-waypoint-a.png'
     });
-    startMarker.addListener('dragend',function(event) {
+    markers[Point.START].addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, startInput);
         if (destSet) {
-            displayRoute(dirSrvc, startMarker, destMarker);
+            displayRoute(dirSrvc, markers);
         }
     });
-    var destMarker = new google.maps.Marker({
+    markers[Point.DEST] = new google.maps.Marker({
         draggable: true,
         icon: 'spotlight-waypoint-b.png'
     });
-    destMarker.addListener('dragend',function(event) {
+    markers[Point.DEST].addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, destInput);
         if (startSet) {
-            displayRoute(dirSrvc, startMarker, destMarker);
+            displayRoute(dirSrvc, markers);
         }
     });
 
     google.maps.event.addListener(map, 'click', function(event) {
        if (startSet == false && startInput.value == "") {
            startSet = true;
-           startMarker.setPosition(event.latLng);
-           startMarker.setMap(map);
+           markers[Point.START].setPosition(event.latLng);
+           markers[Point.START].setMap(map);
            updateInputBox(geocoder, event.latLng, startInput);
            if (destInput.value == "") {
                destInput.focus();
            }
        } else if (destSet == false && destInput.value == "") {
            destSet = true;
-           destMarker.setPosition(event.latLng);
-           destMarker.setMap(map);
+           markers[Point.DEST].setPosition(event.latLng);
+           markers[Point.DEST].setMap(map);
            updateInputBox(geocoder, event.latLng, destInput);
        }
        if (startSet && destSet) {
-           displayRoute(dirSrvc, startMarker, destMarker);
+           displayRoute(dirSrvc, markers);
        }
     });
 
     startInput.addEventListener("input", function() {
         startSet = false;
-        hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet);
+        hideRoute(map, dirDsply, markers, startSet, destSet);
     });
     var startAutocomplete = new google.maps.places.Autocomplete(startInput);
     startAutocomplete.bindTo('bounds', map);
@@ -255,18 +261,18 @@ function initialize() {
           var place = startAutocomplete.getPlace();
           if (place.geometry) {
               startSet = true;
-              startMarker.setMap(map);
-              startMarker.setPosition(place.geometry.location);
-              map.panTo(startMarker.getPosition());
+              markers[Point.START].setMap(map);
+              markers[Point.START].setPosition(place.geometry.location);
+              map.panTo(markers[Point.START].getPosition());
               if (destSet == true) {
-                  displayRoute(dirSrvc, startMarker, destMarker);
+                  displayRoute(dirSrvc, markers);
               }
           }
     });
 
     destInput.addEventListener("input", function() {
         destSet = false;
-        hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet);
+        hideRoute(map, dirDsply, markers, startSet, destSet);
     });
     var destAutocomplete = new google.maps.places.Autocomplete(destInput);
     destAutocomplete.bindTo('bounds', map);
@@ -274,15 +280,15 @@ function initialize() {
           var place = destAutocomplete.getPlace();
           if (place.geometry) {
               destSet = true;
-              destMarker.setMap(map);
-              destMarker.setPosition(place.geometry.location);
+              markers[Point.DEST].setMap(map);
+              markers[Point.DEST].setPosition(place.geometry.location);
               if (startSet == true) {
-                  displayRoute(dirSrvc, startMarker, destMarker);
+                  displayRoute(dirSrvc, markers);
               }
           }
     });
 
     if (routeData != null) {
-        loadRoute(dirSrvc, startMarker, destMarker);
+        loadRoute(dirSrvc, markers);
     }
 }
