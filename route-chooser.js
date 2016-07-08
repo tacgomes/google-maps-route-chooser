@@ -232,6 +232,7 @@ function initialize() {
         document.getElementById('submit-button').disabled = true;
     });
     var startAutocomplete = new google.maps.places.Autocomplete(startInput);
+    startAutocomplete.bindTo('bounds', map);
     startAutocomplete.addListener('place_changed', function() {
           var place = startAutocomplete.getPlace();
           if (place.geometry) {
@@ -258,6 +259,7 @@ function initialize() {
         document.getElementById('submit-button').disabled = true;
     });
     var destAutocomplete = new google.maps.places.Autocomplete(destInput);
+    destAutocomplete.bindTo('bounds', map);
     destAutocomplete.addListener('place_changed', function() {
           var place = destAutocomplete.getPlace();
           if (place.geometry) {
