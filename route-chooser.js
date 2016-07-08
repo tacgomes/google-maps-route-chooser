@@ -242,8 +242,6 @@ function initialize() {
     var pointsSet = [false, false];
     var markers = [null, null];
 
-    // Create markers for showing when not route is either
-    // not being displayed or was found
     createMarker(dirSrvc, geocoder, markers, pointsSet, Point.START,
             startInput, 'spotlight-waypoint-a.png');
     createMarker(dirSrvc, geocoder, markers, pointsSet, Point.DEST,
