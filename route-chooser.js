@@ -146,6 +146,26 @@ function updatePlaceHolders() {
    }
 }
 
+function hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet) {
+    dirDsply.set('directions', null);
+    if (startSet == false) {
+        startMarker.setMap(null);
+    }
+    if (destSet == false) {
+        destMarker.setMap(null);
+    }
+    if (startSet && startMarker.getMap() == null) {
+        startMarker.setMap(map);
+        map.panTo(startMarker.getPosition());
+    }
+    if (destSet && destMarker.getMap() == null) {
+        destMarker.setMap(map);
+        map.panTo(destMarker.getPosition());
+    }
+    updatePlaceHolders();
+    document.getElementById('submit-button').disabled = true;
+}
+
 function initialize() {
     document.getElementById('submit-button').disabled = true;
     document.getElementById('status-label').style.visibility = "hidden";
@@ -226,15 +246,8 @@ function initialize() {
     });
 
     startInput.addEventListener("input", function() {
-        dirDsply.set('directions', null);
-        startMarker.setMap(null);
         startSet = false;
-        if (destSet && destMarker.getMap() == null) {
-            destMarker.setMap(map);
-            map.panTo(destMarker.getPosition());
-        }
-        updatePlaceHolders();
-        document.getElementById('submit-button').disabled = true;
+        hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet);
     });
     var startAutocomplete = new google.maps.places.Autocomplete(startInput);
     startAutocomplete.bindTo('bounds', map);
@@ -252,15 +265,8 @@ function initialize() {
     });
 
     destInput.addEventListener("input", function() {
-        dirDsply.set('directions', null);
-        destMarker.setMap(null);
         destSet = false;
-        if (startSet && startMarker.getMap() == null) {
-           startMarker.setMap(map);
-           map.panTo(startMarker.getPosition());
-        }
-        updatePlaceHolders();
-        document.getElementById('submit-button').disabled = true;
+        hideRoute(map, dirDsply, startMarker, destMarker, startSet, destSet);
     });
     var destAutocomplete = new google.maps.places.Autocomplete(destInput);
     destAutocomplete.bindTo('bounds', map);
