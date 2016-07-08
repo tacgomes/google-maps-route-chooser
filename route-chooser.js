@@ -63,16 +63,21 @@ function saveRoute() {
 
 
 function loadRoute(dirSrvc, startMarker, destMarker) {
-    startMarker.setPosition(new google.maps.LatLng(
-            routeData.start.lat, routeData.start.lng));
-    destMarker.setPosition(new google.maps.LatLng(
-            routeData.end.lat, routeData.end.lng));
+    startMarker.setPosition({
+        lat: routeData.start.lat,
+        lng: routeData.start.lng
+    });
+    destMarker.setPosition({
+        lat: routeData.end.lat,
+        lng: routeData.end.lng
+    });
     var waypoints = [];
     for (var i = 0; i < routeData.waypoints.length; i++) {
         var wp = {
-            location: new google.maps.LatLng(
-                    routeData.waypoints[i][0],
-                    routeData.waypoints[i][1]),
+            location: {
+                lat: routeData.waypoints[i][0],
+                lng: routeData.waypoints[i][1]
+            },
             stopover: false
 
         };
@@ -153,7 +158,7 @@ function initialize() {
 
     var mapOptions = {
         zoom: 12,
-        center: new google.maps.LatLng(41.1579,-8.6291),
+        center: {lat: 41.1579, lng: -8.6291},
         streetViewControl: false
     };
     var mapCanvas = document.getElementById("map-canvas");
