@@ -158,7 +158,7 @@ function initialize() {
 
     var mapOptions = {
         zoom: 12,
-        center: {lat: 41.1579, lng: -8.6291},
+        center: { lat: 41.156111, lng: -8.601111 }, // Oporto, Portugal
         streetViewControl: false
     };
     var mapCanvas = document.getElementById("map-canvas");
