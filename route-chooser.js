@@ -151,19 +151,19 @@ function updatePlaceHolders() {
    }
 }
 
-function hideRoute(map, dirDsply, markers, startSet, destSet) {
+function hideRoute(map, dirDsply, markers, pointsSet) {
     dirDsply.set('directions', null);
-    if (startSet == false) {
+    if (pointsSet[Point.START] == false) {
         markers[Point.START].setMap(null);
     }
-    if (destSet == false) {
+    if (pointsSet[Point.DEST] == false) {
         markers[Point.DEST].setMap(null);
     }
-    if (startSet && markers[Point.START].getMap() == null) {
+    if (pointsSet[Point.START] && markers[Point.START].getMap() == null) {
         markers[Point.START].setMap(map);
         map.panTo(markers[Point.START].getPosition());
     }
-    if (destSet && markers[Point.DEST].getMap() == null) {
+    if (pointsSet[Point.DEST] && markers[Point.DEST].getMap() == null) {
         markers[Point.DEST].setMap(map);
         map.panTo(markers[Point.DEST].getPosition());
     }
@@ -204,8 +204,7 @@ function initialize() {
         }
     });
 
-    var startSet = false;
-    var destSet = false;
+    var pointsSet = [false, false];
 
     // Create markers for showing when not route is either
     // not being displayed or was found
@@ -216,7 +215,7 @@ function initialize() {
     });
     markers[Point.START].addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, startInput);
-        if (destSet) {
+        if (pointsSet[Point.DEST]) {
             displayRoute(dirSrvc, markers);
         }
     });
@@ -226,63 +225,63 @@ function initialize() {
     });
     markers[Point.DEST].addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, destInput);
-        if (startSet) {
+        if (pointsSet[Point.START]) {
             displayRoute(dirSrvc, markers);
         }
     });
 
     google.maps.event.addListener(map, 'click', function(event) {
-       if (startSet == false && startInput.value == "") {
-           startSet = true;
+       if (pointsSet[Point.START] == false && startInput.value == "") {
+           pointsSet[Point.START] = true;
            markers[Point.START].setPosition(event.latLng);
            markers[Point.START].setMap(map);
            updateInputBox(geocoder, event.latLng, startInput);
            if (destInput.value == "") {
                destInput.focus();
            }
-       } else if (destSet == false && destInput.value == "") {
-           destSet = true;
+       } else if (pointsSet[Point.DEST] == false && destInput.value == "") {
+           pointsSet[Point.DEST] = true;
            markers[Point.DEST].setPosition(event.latLng);
            markers[Point.DEST].setMap(map);
            updateInputBox(geocoder, event.latLng, destInput);
        }
-       if (startSet && destSet) {
+       if (pointsSet[Point.START] && pointsSet[Point.DEST]) {
            displayRoute(dirSrvc, markers);
        }
     });
 
     startInput.addEventListener("input", function() {
-        startSet = false;
-        hideRoute(map, dirDsply, markers, startSet, destSet);
+        pointsSet[Point.START] = false;
+        hideRoute(map, dirDsply, markers, pointsSet);
     });
     var startAutocomplete = new google.maps.places.Autocomplete(startInput);
     startAutocomplete.bindTo('bounds', map);
     startAutocomplete.addListener('place_changed', function() {
           var place = startAutocomplete.getPlace();
           if (place.geometry) {
-              startSet = true;
+              pointsSet[Point.START] = true;
               markers[Point.START].setMap(map);
               markers[Point.START].setPosition(place.geometry.location);
               map.panTo(markers[Point.START].getPosition());
-              if (destSet == true) {
+              if (pointsSet[Point.DEST] == true) {
                   displayRoute(dirSrvc, markers);
               }
           }
     });
 
     destInput.addEventListener("input", function() {
-        destSet = false;
-        hideRoute(map, dirDsply, markers, startSet, destSet);
+        pointsSet[Point.DEST] = false;
+        hideRoute(map, dirDsply, markers, pointsSet);
     });
     var destAutocomplete = new google.maps.places.Autocomplete(destInput);
     destAutocomplete.bindTo('bounds', map);
     destAutocomplete.addListener('place_changed', function() {
           var place = destAutocomplete.getPlace();
           if (place.geometry) {
-              destSet = true;
+              pointsSet[Point.DEST] = true;
               markers[Point.DEST].setMap(map);
               markers[Point.DEST].setPosition(place.geometry.location);
-              if (startSet == true) {
+              if (pointsSet[Point.START] == true) {
                   displayRoute(dirSrvc, markers);
               }
           }
