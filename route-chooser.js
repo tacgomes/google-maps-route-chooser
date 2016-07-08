@@ -251,7 +251,6 @@ function initialize() {
           }
     });
 
-    destInput.value = ""
     destInput.addEventListener("input", function() {
         dirDsply.set('directions', null);
         destMarker.setMap(null);
