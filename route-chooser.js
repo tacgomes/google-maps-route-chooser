@@ -2,9 +2,9 @@ var dirDsply = null;
 
 var routeData = null;
 
-// Uncomment the following declaration for testing loading an existing
-// route.  The backend server should fill the real data by echoing it
-// inside a `script` tag.
+// Uncomment the following variable declaration for testing loading an
+// existing route.  The backend server should fill the real data by
+// echoing it inside a `script` tag.
 // var routeData = {
 //     start: {
 //         lat: 41.16651,
@@ -21,7 +21,7 @@ var routeData = null;
 //     ]
 // };
 
-var Point = {
+var Location = {
     START: 0,
     DEST: 1
 };
@@ -59,20 +59,18 @@ function saveRoute() {
     });
     var route_str = JSON.stringify(data);
 
-    alert("Request message = " + route_str);
-
-    // The route could then be stored in a database by doing an AJAX
-    // call to the backend server, passing the JSON string in the body
-    // of HTTP POST message.
+    // The route can be stored in a database by doing an AJAX call to
+    // the backend server, passing the JSON string in the body of a
+    // HTTP POST message.
+    alert("Data to be stored: " + route_str);
 }
 
-
 function loadRoute(dirSrvc, markers) {
-    markers[Point.START].setPosition({
+    markers[Location.START].setPosition({
         lat: routeData.start.lat,
         lng: routeData.start.lng
     });
-    markers[Point.DEST].setPosition({
+    markers[Location.DEST].setPosition({
         lat: routeData.end.lat,
         lng: routeData.end.lng
     });
@@ -84,7 +82,6 @@ function loadRoute(dirSrvc, markers) {
                 lng: routeData.waypoints[i][1]
             },
             stopover: false
-
         };
         waypoints.push(wp);
     }
@@ -96,8 +93,8 @@ function displayRoute(dirSrvc, markers, waypoints) {
         waypoints = [];
     }
     var request = {
-      origin: markers[Point.START].position,
-      destination: markers[Point.DEST].position,
+      origin: markers[Location.START].position,
+      destination: markers[Location.DEST].position,
       travelMode: google.maps.TravelMode.DRIVING,
       waypoints: waypoints,
       optimizeWaypoints: false,
@@ -105,16 +102,16 @@ function displayRoute(dirSrvc, markers, waypoints) {
     };
     dirSrvc.route(request, function(result, status) {
       if (status == google.maps.DirectionsStatus.OK) {
-          markers[Point.START].setMap(null);
-          markers[Point.DEST].setMap(null);
+          markers[Location.START].setMap(null);
+          markers[Location.DEST].setMap(null);
           route = result.routes[0];
           startLeg = route.legs[0];
           end_leg = route.legs[route.legs.length - 1];
           // The markers from the DirectionsService are placed
           // on streets.  Update the markers position to avoid
           // jumps when the route ceases to be shown.
-          markers[Point.START].setPosition(startLeg.start_location);
-          markers[Point.DEST].setPosition(end_leg.end_location);
+          markers[Location.START].setPosition(startLeg.start_location);
+          markers[Location.DEST].setPosition(end_leg.end_location);
           dirDsply.setDirections(result);
           document.getElementById('submit-button').disabled = false;
           document.getElementById('status-label').style.visibility = "hidden"
@@ -122,7 +119,7 @@ function displayRoute(dirSrvc, markers, waypoints) {
           document.getElementById('submit-button').disabled = true;
           document.getElementById('status-label').style.visibility = "visible"
       } else {
-          alert("Failed to get directions:" + status);
+          alert("Failed to get directions: " + status);
       }
     });
 }
@@ -134,31 +131,31 @@ function updateInputBox(geocoder, location, inputBox) {
         } else if (status === google.maps.GeocoderStatus.ZERO_RESULTS) {
             inputBox.value = location.toUrlValue();
         } else {
-            alert('Geocoder failed due to: ' + status);
+            alert("Geocoder failed due to: " + status);
         }
         updatePlaceHolders();
     });
 }
 
 function updatePlaceHolders() {
-    var startInput = document.getElementById('pac-src');
-    var destInput = document.getElementById('pac-dst');
-    if (startInput.value == "") {
-        startInput.placeholder = "Choose starting point, or click on the map…";
-        destInput.placeholder = "Choose destination…";
+    var pacStart = document.getElementById('pac-start');
+    var pacDest = document.getElementById('pac-dest');
+    if (pacStart.value == "") {
+        pacStart.placeholder = "Choose starting point, or click on the map…";
+        pacDest.placeholder = "Choose destination…";
     } else {
-        destInput.placeholder = "Choose destination, or click on the map…";
+        pacDest.placeholder = "Choose destination, or click on the map…";
    }
 }
 
-function oppositePoint(point) {
+function oppositeLocation(point) {
     return (point + 1) % 2;
 }
 
-function hideRoute(map, markers, pointsSet) {
+function hideRoute(map, markers, locationSet) {
     dirDsply.set('directions', null);
-    for (var point in pointsSet) {
-        if (pointsSet[point] == false) {
+    for (var point in locationSet) {
+        if (locationSet[point] == false) {
             markers[point].setMap(null);
         } else if (markers[point].getMap() == null) {
             markers[point].setMap(map);
@@ -170,35 +167,35 @@ function hideRoute(map, markers, pointsSet) {
 }
 
 function createMarker(dirSrvc, geocoder, markers,
-        pointsSet, point, inputBox, icon) {
+        locationSet, point, inputBox, icon) {
     markers[point] = new google.maps.Marker({
         draggable: true,
         icon: icon
     });
     markers[point].addListener('dragend',function(event) {
         updateInputBox(geocoder, event.latLng, inputBox);
-        if (pointsSet[oppositePoint(point)]) {
+        if (locationSet[oppositeLocation(point)]) {
             displayRoute(dirSrvc, markers);
         }
     });
 }
 
 function createAutocomplete(dirSrvc, map, markers,
-        pointsSet, point, inputBox) {
+        locationSet, point, inputBox) {
     inputBox.addEventListener("input", function() {
-        pointsSet[point] = false;
-        hideRoute(map, markers, pointsSet);
+        locationSet[point] = false;
+        hideRoute(map, markers, locationSet);
     });
     var autocomplete = new google.maps.places.Autocomplete(inputBox);
     autocomplete.bindTo('bounds', map);
     autocomplete.addListener('place_changed', function() {
           var place = autocomplete.getPlace();
           if (place.geometry) {
-              pointsSet[point] = true;
+              locationSet[point] = true;
               markers[point].setMap(map);
               markers[point].setPosition(place.geometry.location);
               map.panTo(markers[point].getPosition());
-              if (pointsSet[oppositePoint(point)]) {
+              if (locationSet[oppositeLocation(point)]) {
                   displayRoute(dirSrvc, markers);
               }
           }
@@ -209,10 +206,10 @@ function initialize() {
     document.getElementById('submit-button').disabled = true;
     document.getElementById('status-label').style.visibility = "hidden";
 
-    var startInput = document.getElementById('pac-src');
-    var destInput = document.getElementById('pac-dst');
-    startInput.value = "";
-    destInput.value = "";
+    var pacStart = document.getElementById('pac-start');
+    var pacDest = document.getElementById('pac-dest');
+    pacStart.value = "";
+    pacDest.value = "";
     updatePlaceHolders();
 
     var mapOptions = {
@@ -234,43 +231,43 @@ function initialize() {
         directions = dirDsply.getDirections();
         if (directions != null) {
             leg = directions.routes[0].legs[0];
-            startInput.value = leg.start_address;
-            destInput.value = leg.end_address;
+            pacStart.value = leg.start_address;
+            pacDest.value = leg.end_address;
         }
     });
 
-    var pointsSet = [false, false];
+    var locationSet = [false, false];
     var markers = [null, null];
 
-    createMarker(dirSrvc, geocoder, markers, pointsSet, Point.START,
-            startInput, 'spotlight-waypoint-a.png');
-    createMarker(dirSrvc, geocoder, markers, pointsSet, Point.DEST,
-            destInput, 'spotlight-waypoint-b.png');
+    createMarker(dirSrvc, geocoder, markers, locationSet, Location.START,
+            pacStart, 'spotlight-waypoint-a.png');
+    createMarker(dirSrvc, geocoder, markers, locationSet, Location.DEST,
+            pacDest, 'spotlight-waypoint-b.png');
 
     google.maps.event.addListener(map, 'click', function(event) {
-       if (pointsSet[Point.START] == false && startInput.value == "") {
-           pointsSet[Point.START] = true;
-           markers[Point.START].setPosition(event.latLng);
-           markers[Point.START].setMap(map);
-           updateInputBox(geocoder, event.latLng, startInput);
-           if (destInput.value == "") {
-               destInput.focus();
+       if (locationSet[Location.START] == false && pacStart.value == "") {
+           locationSet[Location.START] = true;
+           markers[Location.START].setPosition(event.latLng);
+           markers[Location.START].setMap(map);
+           updateInputBox(geocoder, event.latLng, pacStart);
+           if (pacDest.value == "") {
+               pacDest.focus();
            }
-       } else if (pointsSet[Point.DEST] == false && destInput.value == "") {
-           pointsSet[Point.DEST] = true;
-           markers[Point.DEST].setPosition(event.latLng);
-           markers[Point.DEST].setMap(map);
-           updateInputBox(geocoder, event.latLng, destInput);
+       } else if (locationSet[Location.DEST] == false && pacDest.value == "") {
+           locationSet[Location.DEST] = true;
+           markers[Location.DEST].setPosition(event.latLng);
+           markers[Location.DEST].setMap(map);
+           updateInputBox(geocoder, event.latLng, pacDest);
        }
-       if (pointsSet[Point.START] && pointsSet[Point.DEST]) {
+       if (locationSet[Location.START] && locationSet[Location.DEST]) {
            displayRoute(dirSrvc, markers);
        }
     });
 
     createAutocomplete(dirSrvc, map, markers,
-            pointsSet, Point.START, startInput);
+            locationSet, Location.START, pacStart);
     createAutocomplete(dirSrvc, map, markers,
-            pointsSet, Point.DEST, destInput);
+            locationSet, Location.DEST, pacDest);
 
     if (routeData != null) {
         loadRoute(dirSrvc, markers);
