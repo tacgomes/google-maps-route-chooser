@@ -59,10 +59,8 @@ function saveRoute() {
     });
     var route_str = JSON.stringify(data);
 
-    // The route can be stored in a database by doing an AJAX call to
-    // the backend server, passing the JSON string in the body of a
-    // HTTP POST message.
-    alert("Data to be stored: " + route_str);
+    document.getElementById('map-data').value = route_str;
+    document.getElementById('directions-form').submit()
 }
 
 function loadRoute(dirSrvc, markers) {
