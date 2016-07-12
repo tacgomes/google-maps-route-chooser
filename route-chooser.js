@@ -10,7 +10,7 @@ var routeData = null;
 //         lat: 41.16651,
 //         lng: -8.67069
 //     },
-//     end: {
+//     dest: {
 //         lat: 41.16652,
 //         lng: -8.61743
 //     },
@@ -49,7 +49,7 @@ function saveRoute() {
         lat: leg.start_location.lat(),
         lng: leg.start_location.lng()
     };
-    data.end = {
+    data.dest = {
         lat: leg.end_location.lat(),
         lng: leg.end_location.lng()
     };
@@ -71,8 +71,8 @@ function loadRoute(dirSrvc, markers) {
         lng: routeData.start.lng
     });
     markers[Location.DEST].setPosition({
-        lat: routeData.end.lat,
-        lng: routeData.end.lng
+        lat: routeData.dest.lat,
+        lng: routeData.dest.lng
     });
     var waypoints = [];
     for (var i = 0; i < routeData.waypoints.length; i++) {
